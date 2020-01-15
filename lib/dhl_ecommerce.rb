@@ -11,8 +11,8 @@ module DhlEcommerce
     include DhlEcommerce::Client::Connection
     include DhlEcommerce::Client::Endpoints
 
-    def initialize(client_id: '', password: '', sandbox: true)
-      self.class.base_uri (sandbox ? SANDBOX_BASE_URL : PRODUCTION_BASE_URL)
+    def initialize(client_id: '', password: '', production_env: false)
+      self.class.base_uri (production_env ? PRODUCTION_BASE_URL : SANDBOX_BASE_URL)
       @client_id = client_id
       @password = password
       authenticate!
