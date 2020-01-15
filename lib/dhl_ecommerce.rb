@@ -1,31 +1,29 @@
+# frozen_string_literal: true
+
 require 'dhl_ecommerce/constants'
-require 'dhl_ecommerce/logger'
-require 'base64'
+require 'dhl_ecommerce/connection'
+require 'dhl_ecommerce/endpoints'
 require 'httparty'
 
 module DhlEcommerce
   class Client
     include HTTParty
-    base_uri BASE_URL
+    include DhlEcommerce::Client::Connection
+    include DhlEcommerce::Client::Endpoints
 
-    def initialize(client_id: SANDBOX_CLIENT_ID, client_secret: SANDBOX_CLIENT_SECRET)
-      @encoded_credentials = Base64.strict_encode64("#{client_id}:#{client_secret}")
-    end
-
-    def authorize
-      headers = { accept: 'application/json', authorization: "Basic #{@encoded_credentials}" }
-      response = HTTParty.get(AUTH_URL, headers: headers)
-      @access_token = JSON.parse(response.body).dig('access_token')
-      return DhlEcommerce.log_info('Authorize failure: ' << response.body) unless @access_token
-
-      assign_default_headers
+    def initialize(client_id: '', password: '', sandbox: true)
+      self.class.base_uri (sandbox ? SANDBOX_BASE_URL : PRODUCTION_BASE_URL)
+      @client_id = client_id
+      @password = password
+      authenticate!
+      self.class.default_options.merge!(headers: { 'content-type': 'application/json' })
     end
 
     private
 
-    def assign_default_headers
-      headers = { accept: 'application/json', authorization: "Bearer #{@access_token}", content_type: 'application/json' }
-      self.class.default_options.merge!(headers: headers)
+    def authenticate!
+      resp = HTTParty.get("#{self.class.base_uri}/rest/v1/OAuth/AccessToken", query: { clientId: @client_id, password: @password })
+      @access_token = resp.dig('accessTokenResponse', 'token')
     end
   end
 end
