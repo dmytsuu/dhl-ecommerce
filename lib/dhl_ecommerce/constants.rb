@@ -3,6 +3,6 @@
 module DhlEcommerce
   VERSION = '0.1.2'
 
-  SANDBOX_BASE_URL = 'https://sandbox.dhlecommerce.asia'
+  SANDBOX_BASE_URL = 'https://apitest.dhlecommerce.asia'
   PRODUCTION_BASE_URL = 'https://api.dhlecommerce.asia'
 end
